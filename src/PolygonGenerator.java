@@ -1,71 +1,78 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PolygonGenerator {
 
     private final int numberOfPoints;
-    private final int halfPoints;
+    private final int middleOfBoard;
     private final Point points[];
-    private final boolean gehadx[];
-    private final boolean gehady[];
+    private final boolean usedX[];
+    private final boolean usedY[];
     private final double[] listOfRCs;
 
+    private int rawArea;
     private int currentSize;
     public long numberOfSolutions = 0;
 
     public PolygonGenerator(int numberOfPoints) {
         this.numberOfPoints = numberOfPoints;
         this.points = new Point[numberOfPoints];
-        this.halfPoints = this.numberOfPoints / 2; //if max is 7 then 3 is just valid
-        this.gehadx = new boolean[numberOfPoints];
-        this.gehady = new boolean[numberOfPoints];
+        this.middleOfBoard = this.numberOfPoints / 2; //if max is 7 then 3 is just valid
+        this.usedX = new boolean[numberOfPoints];
+        this.usedY = new boolean[numberOfPoints];
         this.listOfRCs = new double[numberOfPoints];
+        this.rawArea = 0;
     }
 
     public void generateAllSolutions() {
         if (currentSize == numberOfPoints) {
             numberOfSolutions++;
+            rawArea += addDelta(lastPoint(), firstPoint());
             Main.solution(points);
             return;
         }
         List<Point> moves = generatePossibleMoves();
+        int orginalArea = rawArea;
         for (Point move : moves) {
             doMove(move);
             generateAllSolutions();
             undoLastMove();
+            rawArea = orginalArea; //simple and less buggy than calculate this in undolastmove
         }
     }
 
+    private static int addDelta(Point a, Point b) {
+        return (a.x + b.x) * (a.y - b.y);
+    }
+
     private void doMove(Point move) {
-        gehadx[move.getX()] = true;
-        gehady[move.getY()] = true;
+        usedX[move.getX()] = true;
+        usedY[move.getY()] = true;
+        points[currentSize] = move;
         if (currentSize >= 1) {
             //rc is only possible with two points, so we two points we have one rc
             listOfRCs[currentSize - 1] = Math.calcRC(lastPoint(), move);
+            rawArea += Math.addDelta(lastPoint(), move);
         }
-        points[currentSize] = move;
         currentSize++;
     }
 
     private void undoLastMove() {
         Point lastPoint = lastPoint();
-        gehadx[lastPoint.getX()] = false;
-        gehady[lastPoint.getY()] = false;
+        usedX[lastPoint.getX()] = false;
+        usedY[lastPoint.getY()] = false;
         currentSize--;
     }
 
     private List<Point> generatePossibleMoves() {
         List<Point> list = new ArrayList<Point>();
         for (int y = 0; y < numberOfPoints; y++) {
-            if (gehady[y]) continue;
+            if (usedY[y]) continue;
             for (int x = 0; x < numberOfPoints; x++) {
-                if (gehadx[x]) continue;
+                if (usedX[x]) continue;
                 Point newPoint = new Point(x, y);
                 if (!isValidMirroringPoint(newPoint)) {
-                    continue;
-                }
-
-                if (doesPointLeadToInvalidIntersections(newPoint)) {
                     continue;
                 }
 
@@ -73,9 +80,16 @@ public class PolygonGenerator {
                     continue;
                 }
 
+                if (doesPointLeadToInvalidIntersections(newPoint)) {
+                    continue;
+                }
+
                 list.add(newPoint);
             }
         }
+
+        Collections.shuffle(list);
+
         return list;
     }
 
@@ -85,6 +99,8 @@ public class PolygonGenerator {
                 return isValidMirroringFirstPoint(newPoint);
             case 1:
                 return isValidMirroringOtherPoint(newPoint);
+            case 2:
+                return isValidMirroringOtherPoint(newPoint) && Math.orientation(points[0], points[1], newPoint) >= 0;
             default:
                 //others
                 return isValidMirroringOtherPoint(newPoint);
@@ -96,7 +112,7 @@ public class PolygonGenerator {
     }
 
     private boolean isValidMirroringFirstPoint(Point newPoint) {
-        return newPoint.x <= halfPoints && newPoint.y <= halfPoints;
+        return newPoint.x <= middleOfBoard && newPoint.y <= middleOfBoard;
     }
 
     private boolean doesPointLeadToInvalidIntersections(Point newPoint) {
@@ -117,7 +133,6 @@ public class PolygonGenerator {
             }
         } else {
             for (int i = 0; i < currentSize - 2; i++) {
-                //a-b c-np
                 if (Math.isLinesIntersect(points[i], points[i + 1], lastPoint(), newPoint)) {
                     return true;
                 }
@@ -147,12 +162,7 @@ public class PolygonGenerator {
         if (isAlmostComplete()) {
             Double rc1 = Math.calcRC(newPoint, firstPoint());
             Double rc2 = Math.calcRC(lastPoint(), newPoint);
-
-            if (rc1.equals(rc2)) {
-                return true;
-            }
-
-            return containsRC(rc1, rc2);
+            return rc1.equals(rc2) || containsRC(rc1, rc2);
         }
 
         Double rc = Math.calcRC(lastPoint(), newPoint);
@@ -176,5 +186,9 @@ public class PolygonGenerator {
         }
 
         return false;
+    }
+
+    public int getArea() {
+        return (rawArea < 0) ? -rawArea : rawArea;
     }
 }

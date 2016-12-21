@@ -6,14 +6,6 @@ public class Point implements Comparable<Point> {
         this.y = y;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
     @Override
     public String toString() {
         return "(" + (x + 1) + "," + (y + 1) + ")";

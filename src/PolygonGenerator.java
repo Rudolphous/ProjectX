@@ -47,8 +47,8 @@ public class PolygonGenerator {
     }
 
     private void doMove(Point move) {
-        usedX[move.getX()] = true;
-        usedY[move.getY()] = true;
+        usedX[move.x] = true;
+        usedY[move.y] = true;
         points[currentSize] = move;
         if (currentSize >= 1) {
             //rc is only possible with two points, so we two points we have one rc
@@ -60,8 +60,8 @@ public class PolygonGenerator {
 
     private void undoLastMove() {
         Point lastPoint = lastPoint();
-        usedX[lastPoint.getX()] = false;
-        usedY[lastPoint.getY()] = false;
+        usedX[lastPoint.x] = false;
+        usedY[lastPoint.y] = false;
         currentSize--;
     }
 

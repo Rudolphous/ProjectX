@@ -102,14 +102,14 @@ public class PolygonGenerator {
     private boolean doesPointLeadToInvalidIntersections(Point newPoint) {
         if (isAlmostComplete()) {
             //now we do more checks since this is the last point and we close the loop (two lines are added instead of one)
-            for (int i = 1; i < numberOfPoints - 2; i++) {
+            for (int i = 1; i < currentSize - 1; i++) {
                 //newpoint to first point
                 if (Math.isLinesIntersect(points[i], points[i + 1], newPoint, firstPoint())) {
                     return true;
                 }
             }
 
-            for (int i = 0; i < numberOfPoints - 3; i++) {
+            for (int i = 0; i < currentSize - 2; i++) {
                 //lastpoint to new point
                 if (Math.isLinesIntersect(points[i], points[i + 1], lastPoint(), newPoint)) {
                     return true;

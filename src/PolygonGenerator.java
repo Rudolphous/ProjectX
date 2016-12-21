@@ -5,8 +5,8 @@ public class PolygonGenerator {
     public final int numberOfPoints;
     private final int halfPoints;
     private List<Point> points;
-    private BitSet gehadx;
-    private BitSet gehady;
+    private boolean gehadx[];
+    private boolean gehady[];
     private List<Double> listOfRCs;
     public long aantal = 0;
 
@@ -14,8 +14,8 @@ public class PolygonGenerator {
         this.numberOfPoints = numberOfPoints;
         this.points = new ArrayList(numberOfPoints);
         this.halfPoints = this.numberOfPoints / 2; //if max is 7 then 3 is just valid
-        this.gehadx = new BitSet(numberOfPoints);
-        this.gehady = new BitSet(numberOfPoints);
+        this.gehadx = new boolean[numberOfPoints];
+        this.gehady =  new boolean[numberOfPoints];
         this.listOfRCs = new ArrayList<Double>();
     }
 
@@ -34,9 +34,10 @@ public class PolygonGenerator {
     }
 
     private void doMove(Point move) {
-        gehadx.set(move.getX());
-        gehady.set(move.getY());
+        gehadx[move.getX()] = true;
+        gehady[move.getY()] = true;
         if (!points.isEmpty()) {
+            //rc is only possible with two points
             listOfRCs.add(Math.calcRC(lastPoint(), move));
         }
         points.add(move);
@@ -44,8 +45,8 @@ public class PolygonGenerator {
 
     private void undoLastMove() {
         Point lastPoint = lastPoint();
-        gehadx.clear(lastPoint.getX());
-        gehady.clear(lastPoint.getY());
+        gehadx[lastPoint.getX()] = false;
+        gehady[lastPoint.getY()] = false;
         if (!listOfRCs.isEmpty()) {
             listOfRCs.remove(listOfRCs.size() - 1);
         }
@@ -55,9 +56,9 @@ public class PolygonGenerator {
     private List<Point> generatePossibleMoves() {
         List<Point> list = new ArrayList<Point>();
         for (int y=0; y<numberOfPoints; y++) {
-            if (gehady.get(y)) continue;
+            if (gehady[y]) continue;
             for (int x=0; x<numberOfPoints; x++) {
-                if (gehadx.get(x)) continue;
+                if (gehadx[x]) continue;
                 Point newPoint = new Point(x, y);
                 if (!isValidPoint(newPoint)) {
                     continue;
@@ -92,13 +93,6 @@ public class PolygonGenerator {
 
     private boolean isValidOtherPoint(Point newPoint) {
         return points.get(0).compareTo(newPoint) <= 0;
-    }
-
-    /*
-    doesnot work
-     */
-    private boolean isValidSecondPoint(Point newPoint) {
-        return newPoint.getY() <= newPoint.getX();
     }
 
     private boolean isValidFirstPoint(Point newPoint) {
@@ -143,13 +137,6 @@ public class PolygonGenerator {
             return null;
         }
         return points.get(points.size() - 1);
-    }
-
-    private void clear() {
-        points.clear();
-        gehadx.clear();
-        gehady.clear();
-        listOfRCs.clear();
     }
 
     private boolean isDuplicateRC(Point newPoint) {

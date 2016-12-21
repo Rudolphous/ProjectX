@@ -1,20 +1,17 @@
 import java.util.BitSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class SolutionValidator {
 
-    public boolean isValidSolutions(List<Point> points) {
-        int len = points.size();
-
-        BitSet gehadx = new BitSet(len);
-        BitSet gehady = new BitSet(len);
-        Point oreviosPoint = points.get(points.size() - 1);
+    public boolean isValidSolutions(Point[] points) {
+        BitSet gehadx = new BitSet(points.length);
+        BitSet gehady = new BitSet(points.length);
+        Point previousPoint = points[points.length - 1];
 
         Set<Double> listOfRCs = new HashSet<Double>();
         for (Point point : points) {
-            Double currentRC = calcRC(oreviosPoint, point);
+            Double currentRC = calcRC(previousPoint, point);
             if (listOfRCs.contains(currentRC)) {
                 //we have already this direction
                 return false;
@@ -22,33 +19,33 @@ public class SolutionValidator {
             listOfRCs.add(currentRC);
             gehadx.set(point.getX());
             gehady.set(point.getY());
-            oreviosPoint = point;
+            previousPoint = point;
         }
 
         int nextClearx = gehadx.nextClearBit(0);
         int nextCleary = gehady.nextClearBit(0);
-        if (nextClearx != len || nextCleary != len) {
+        if (nextClearx != points.length || nextCleary != points.length) {
             return false;
         }
 
         return !hasIntersectingLines(points);
     }
 
-    private boolean hasIntersectingLines(List<Point> points) {
-        int len = points.size();
-        for (int i=0; i <= len; i++) {
-            for (int j=i+1; j <= len; j++) {
+    private boolean hasIntersectingLines(Point[] points) {
+        int len = points.length;
+        for (int i = 0; i <= len; i++) {
+            for (int j = i + 1; j <= len; j++) {
                 int index1 = validIndex(points, i - 1);
                 int index2 = validIndex(points, i);
                 int index3 = validIndex(points, j);
-                int index4 = validIndex(points, j+1);
+                int index4 = validIndex(points, j + 1);
 
                 if (index1 == index3 || index2 == index3 || index1 == index4) continue;
 
-                Point p1 = points.get(index1);
-                Point p2 = points.get(index2);
-                Point p3 = points.get(index3);
-                Point p4 = points.get(index4);
+                Point p1 = points[index1];
+                Point p2 = points[index2];
+                Point p3 = points[index3];
+                Point p4 = points[index4];
                 if (Math.isLinesIntersect(p1, p2, p3, p4)) {
                     return true;
                 }
@@ -58,10 +55,9 @@ public class SolutionValidator {
         return false;
     }
 
-    private static int validIndex(List<Point> points, int index) {
-        int len = points.size();
-        if (index < 0) index += len;
-        if (index >= len) index -= len;
+    private static int validIndex(Point[] points, int index) {
+        if (index < 0) index += points.length;
+        if (index >= points.length) index -= points.length;
         return index;
     }
 
@@ -72,7 +68,7 @@ public class SolutionValidator {
             //not possible
             return null;
         }
-        return Double.valueOf((double)deltax / deltay);
+        return Double.valueOf((double) deltax / deltay);
     }
 
 }

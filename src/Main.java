@@ -1,5 +1,3 @@
-import java.util.List;
-
 public class Main {
 
     private static PolygonGenerator generator = new PolygonGenerator(8);
@@ -7,16 +5,16 @@ public class Main {
     private static double minArea = Double.MAX_VALUE;
     private static double maxArea = 0.0;
 
-    public static void solution(List<Point> points) {
-        double currentArea = Math.getArea(points);
+    public static void solution(Point[] solution) {
+        double currentArea = Math.getArea(solution);
 
         if (currentArea > maxArea) {
             maxArea = currentArea;
-            System.out.println("max(" + generator.numberOfPoints + "):" + points + "=" + maxArea + " " + validator.isValidSolutions(points));
+            //System.out.println("max(" + solution.length + "):" + solution + "=" + maxArea + " " + validator.isValidSolutions(solution));
         }
         if (currentArea < minArea) {
             minArea = currentArea;
-            System.out.println("min(" + generator.numberOfPoints + "):" + points + "=" + minArea + " " + validator.isValidSolutions(points));
+            //System.out.println("min(" + solution.length + "):" + solution + "=" + minArea + " " + validator.isValidSolutions(solution));
         }
     }
 
@@ -24,7 +22,7 @@ public class Main {
         long start = System.nanoTime();
         generator.generateAllSolutions();
         long duration = System.nanoTime() - start;
-        System.out.println("duration: " + (double)duration / 1000000);
-        System.out.println("solutions: " + generator.aantal);
+        System.out.println("duration: " + (double) duration / 1000000);
+        System.out.println("solutions: " + generator.numberOfSolutions);
     }
 }

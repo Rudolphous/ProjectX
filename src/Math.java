@@ -1,6 +1,3 @@
-import java.awt.geom.Line2D;
-import java.util.List;
-
 public class Math {
 
     public static boolean isLinesIntersect(Point p1, Point q1, Point p2, Point q2) {
@@ -23,16 +20,16 @@ public class Math {
         // See http://www.geeksforgeeks.org/orientation-3-ordered-points/
         // for details of below formula.
         int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-        return (val == 0) ? 0 : (val >0) ? 1 : 2;
+        return (val == 0) ? 0 : (val > 0) ? 1 : 2;
     }
 
-    public static double getArea(List<Point> points) {
+    public static double getArea(Point[] points) {
         double area = 0.0;
-        Point previous = points.get(points.size() - 1);
+        Point previous = points[points.length - 1];
 
-        for (int i=0; i< points.size(); i++) {
-            Point current = points.get(i);
-            area += (previous.getX() + current.getX()) * (previous.getY() - current.getY());
+        for (int i = 0; i < points.length; i++) {
+            Point current = points[i];
+            area += (previous.x + current.x) * (previous.y - current.y);
             previous = current;
         }
         return java.lang.Math.abs(area / 2);
@@ -40,12 +37,12 @@ public class Math {
 
 
     public static Double calcRC(Point point1, Point point2) {
-        int deltax = point2.getX() - point1.getX();
-        int deltay = point2.getY() - point1.getY();
+        int deltax = point2.x - point1.x;
+        int deltay = point2.y - point1.y;
         if (deltay == 0) {
             //not possible
             return Double.MAX_VALUE;
         }
-        return Double.valueOf((double)deltax / deltay);
+        return Double.valueOf((double) deltax / deltay);
     }
 }

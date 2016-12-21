@@ -1,27 +1,30 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PolygonGenerator {
 
-    public final int numberOfPoints;
+    private final int numberOfPoints;
     private final int halfPoints;
-    private List<Point> points;
-    private boolean gehadx[];
-    private boolean gehady[];
-    private List<Double> listOfRCs;
-    public long aantal = 0;
+    private final Point points[];
+    private final boolean gehadx[];
+    private final boolean gehady[];
+    private final double[] listOfRCs;
+
+    private int currentSize;
+    public long numberOfSolutions = 0;
 
     public PolygonGenerator(int numberOfPoints) {
         this.numberOfPoints = numberOfPoints;
-        this.points = new ArrayList(numberOfPoints);
+        this.points = new Point[numberOfPoints];
         this.halfPoints = this.numberOfPoints / 2; //if max is 7 then 3 is just valid
         this.gehadx = new boolean[numberOfPoints];
-        this.gehady =  new boolean[numberOfPoints];
-        this.listOfRCs = new ArrayList<Double>();
+        this.gehady = new boolean[numberOfPoints];
+        this.listOfRCs = new double[numberOfPoints];
     }
 
     public void generateAllSolutions() {
-        if (points.size() == numberOfPoints) {
-            aantal++;
+        if (currentSize == numberOfPoints) {
+            numberOfSolutions++;
             Main.solution(points);
             return;
         }
@@ -36,31 +39,29 @@ public class PolygonGenerator {
     private void doMove(Point move) {
         gehadx[move.getX()] = true;
         gehady[move.getY()] = true;
-        if (!points.isEmpty()) {
-            //rc is only possible with two points
-            listOfRCs.add(Math.calcRC(lastPoint(), move));
+        if (currentSize >= 1) {
+            //rc is only possible with two points, so we two points we have one rc
+            listOfRCs[currentSize - 1] = Math.calcRC(lastPoint(), move);
         }
-        points.add(move);
+        points[currentSize] = move;
+        currentSize++;
     }
 
     private void undoLastMove() {
         Point lastPoint = lastPoint();
         gehadx[lastPoint.getX()] = false;
         gehady[lastPoint.getY()] = false;
-        if (!listOfRCs.isEmpty()) {
-            listOfRCs.remove(listOfRCs.size() - 1);
-        }
-        points.remove(points.size() - 1);
+        currentSize--;
     }
 
     private List<Point> generatePossibleMoves() {
         List<Point> list = new ArrayList<Point>();
-        for (int y=0; y<numberOfPoints; y++) {
+        for (int y = 0; y < numberOfPoints; y++) {
             if (gehady[y]) continue;
-            for (int x=0; x<numberOfPoints; x++) {
+            for (int x = 0; x < numberOfPoints; x++) {
                 if (gehadx[x]) continue;
                 Point newPoint = new Point(x, y);
-                if (!isValidPoint(newPoint)) {
+                if (!isValidMirroringPoint(newPoint)) {
                     continue;
                 }
 
@@ -72,54 +73,52 @@ public class PolygonGenerator {
                     continue;
                 }
 
-
                 list.add(newPoint);
             }
         }
         return list;
     }
 
-    private boolean isValidPoint(Point newPoint) {
-        switch (points.size()) {
+    private boolean isValidMirroringPoint(Point newPoint) {
+        switch (currentSize) {
             case 0:
-                return isValidFirstPoint(newPoint);
+                return isValidMirroringFirstPoint(newPoint);
             case 1:
-                return isValidOtherPoint(newPoint);
+                return isValidMirroringOtherPoint(newPoint);
             default:
                 //others
-                return isValidOtherPoint(newPoint);
+                return isValidMirroringOtherPoint(newPoint);
         }
     }
 
-    private boolean isValidOtherPoint(Point newPoint) {
-        return points.get(0).compareTo(newPoint) <= 0;
+    private boolean isValidMirroringOtherPoint(Point newPoint) {
+        return firstPoint().compareTo(newPoint) <= 0;
     }
 
-    private boolean isValidFirstPoint(Point newPoint) {
-        return newPoint.getX() <= halfPoints && newPoint.getY() <= halfPoints;
+    private boolean isValidMirroringFirstPoint(Point newPoint) {
+        return newPoint.x <= halfPoints && newPoint.y <= halfPoints;
     }
 
     private boolean doesPointLeadToInvalidIntersections(Point newPoint) {
         if (isAlmostComplete()) {
             //now we do more checks since this is the last point and we close the loop (two lines are added instead of one)
-
-            for (int i=1; i<numberOfPoints-2; i++) {
+            for (int i = 1; i < numberOfPoints - 2; i++) {
                 //newpoint to first point
-                if (Math.isLinesIntersect(points.get(i), points.get(i+1), newPoint, points.get(0))) {
+                if (Math.isLinesIntersect(points[i], points[i + 1], newPoint, firstPoint())) {
                     return true;
                 }
             }
 
-            for (int i=0; i<numberOfPoints-3; i++) {
+            for (int i = 0; i < numberOfPoints - 3; i++) {
                 //lastpoint to new point
-                if (Math.isLinesIntersect(points.get(i), points.get(i+1), lastPoint(), newPoint)) {
+                if (Math.isLinesIntersect(points[i], points[i + 1], lastPoint(), newPoint)) {
                     return true;
                 }
             }
         } else {
-            for (int i=0; i<points.size()-2; i++) {
+            for (int i = 0; i < currentSize - 2; i++) {
                 //a-b c-np
-                if (Math.isLinesIntersect(points.get(i), points.get(i+1), lastPoint(), newPoint)) {
+                if (Math.isLinesIntersect(points[i], points[i + 1], lastPoint(), newPoint)) {
                     return true;
                 }
             }
@@ -129,41 +128,53 @@ public class PolygonGenerator {
     }
 
     private boolean isAlmostComplete() {
-        return points.size() == numberOfPoints-1;
+        return currentSize == numberOfPoints - 1;
+    }
+
+    private Point firstPoint() {
+        return points[0];
     }
 
     private Point lastPoint() {
-        if (points.isEmpty()) {
-            return null;
-        }
-        return points.get(points.size() - 1);
+        return points[currentSize - 1];
     }
 
     private boolean isDuplicateRC(Point newPoint) {
-        if (points.isEmpty()) {
+        if (currentSize == 0) {
             return false;
         }
 
         if (isAlmostComplete()) {
-            Double rc1 = Math.calcRC(newPoint, points.get(0));
+            Double rc1 = Math.calcRC(newPoint, firstPoint());
             Double rc2 = Math.calcRC(lastPoint(), newPoint);
 
             if (rc1.equals(rc2)) {
                 return true;
             }
 
-            if (listOfRCs.contains(rc1)) {
-                return true;
-            }
-
-            if (listOfRCs.contains(rc2)) {
-                return true;
-            }
-
-            return false;
+            return containsRC(rc1, rc2);
         }
 
         Double rc = Math.calcRC(lastPoint(), newPoint);
-        return (listOfRCs.contains(rc));
+        return containsRC(rc);
+    }
+
+    private boolean containsRC(Double rc) {
+        for (int i=0; i<currentSize-1; i++) {
+            if (listOfRCs[i] == rc) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsRC(Double rc1, Double rc2) {
+        for (int i=0; i<currentSize-1; i++) {
+            if (listOfRCs[i] == rc1 || listOfRCs[i] == rc2) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

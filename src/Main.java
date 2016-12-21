@@ -11,11 +11,11 @@ public class Main {
 
         if (area > maxArea) {
             maxArea = area;
-            System.out.println("max(" + solution.length + "):" + toString(solution) + "=" + (double)maxArea/2);
+            System.out.println("max(" + solution.length + "):" + toString(solution) + "=" + maxArea/2);
         }
         if (area < minArea) {
             minArea = area;
-            System.out.println("min(" + solution.length + "):" + toString(solution) + "=" + (double)minArea/2);
+            System.out.println("min(" + solution.length + "):" + toString(solution) + "=" + minArea/2);
         }
     }
 

@@ -1,8 +1,10 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class PolygonGenerator {
+
+    private static Random RANDOM = new Random(13);
 
     private final int numberOfPoints;
     private final int middleOfBoard;
@@ -26,6 +28,14 @@ public class PolygonGenerator {
     }
 
     public void generateAllSolutions() {
+        if (currentSize == 0) {
+            doMove(new Point(0,0));
+            doMove(new Point(1,1));
+            doMove(new Point(3,2));
+            doMove(new Point(2,3));
+            doMove(new Point(5,4));
+        }
+
         if (currentSize == numberOfPoints) {
             numberOfSolutions++;
             rawArea += addDelta(lastPoint(), firstPoint());
@@ -34,11 +44,22 @@ public class PolygonGenerator {
         }
         List<Point> moves = generatePossibleMoves();
         int orginalArea = rawArea;
-        for (Point move : moves) {
+        int error = 0;
+        for (;;) {
+            if (moves.isEmpty()) {
+                break;
+            }
+            int randomIndex = RANDOM.nextInt(moves.size());
+            Point move = moves.get(randomIndex);
+            moves.remove(randomIndex);
             doMove(move);
             generateAllSolutions();
             undoLastMove();
+            error++;
             rawArea = orginalArea; //simple and less buggy than calculate this in undolastmove
+            if (error == 3) {
+                break;
+            }
         }
     }
 
@@ -87,8 +108,6 @@ public class PolygonGenerator {
                 list.add(newPoint);
             }
         }
-
-        Collections.shuffle(list);
 
         return list;
     }

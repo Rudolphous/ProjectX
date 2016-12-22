@@ -1,5 +1,6 @@
 public class Point implements Comparable<Point> {
     public final int x, y;
+    public int score;
 
     public Point(int x, int y) {
         this.x = x;

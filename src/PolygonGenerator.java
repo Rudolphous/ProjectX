@@ -1,10 +1,8 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class PolygonGenerator {
 
-    private static Random RANDOM = new Random(13);
+    private static Random RANDOM = new Random(37);
 
     private final int numberOfPoints;
     private final int middleOfBoard;
@@ -20,7 +18,7 @@ public class PolygonGenerator {
     public PolygonGenerator(int numberOfPoints) {
         this.numberOfPoints = numberOfPoints;
         this.points = new Point[numberOfPoints];
-        this.middleOfBoard = this.numberOfPoints / 2; //if max is 7 then 3 is just valid
+        this.middleOfBoard = this.numberOfPoints / 3; //if max is 7 then 3 is just valid
         this.usedX = new boolean[numberOfPoints];
         this.usedY = new boolean[numberOfPoints];
         this.listOfRCs = new double[numberOfPoints];
@@ -29,11 +27,12 @@ public class PolygonGenerator {
 
     public void generateAllSolutions() {
         if (currentSize == 0) {
-            doMove(new Point(0,0));
-            doMove(new Point(1,1));
-            doMove(new Point(3,2));
-            doMove(new Point(2,3));
-            doMove(new Point(5,4));
+            doMoveH(1, 1);
+            doMoveH(2, 2);
+            doMoveH(4, 3);
+            doMoveH(3, 4);
+            doMoveH(6, 5);
+            doMoveH(10, 6);
         }
 
         if (currentSize == numberOfPoints) {
@@ -43,24 +42,26 @@ public class PolygonGenerator {
             return;
         }
         List<Point> moves = generatePossibleMoves();
+
+        /*if (moves.size() >= 2) {
+            sortPoints(moves);
+        } */
+
         int orginalArea = rawArea;
         int error = 0;
-        for (;;) {
-            if (moves.isEmpty()) {
-                break;
-            }
-            int randomIndex = RANDOM.nextInt(moves.size());
-            Point move = moves.get(randomIndex);
-            moves.remove(randomIndex);
+        for (Point move :moves) {
             doMove(move);
             generateAllSolutions();
-            undoLastMove();
+            undoLastMove(orginalArea);
             error++;
-            rawArea = orginalArea; //simple and less buggy than calculate this in undolastmove
-            if (error == 3) {
+            if (error == 4) {
                 break;
             }
         }
+    }
+
+    private void doMoveH(int x, int y) {
+        doMove(new Point(x-1, y-1));
     }
 
     private static int addDelta(Point a, Point b) {
@@ -79,11 +80,12 @@ public class PolygonGenerator {
         currentSize++;
     }
 
-    private void undoLastMove() {
+    private void undoLastMove(int orgArea) {
         Point lastPoint = lastPoint();
         usedX[lastPoint.x] = false;
         usedY[lastPoint.y] = false;
         currentSize--;
+        rawArea = orgArea;
     }
 
     private List<Point> generatePossibleMoves() {
@@ -110,6 +112,23 @@ public class PolygonGenerator {
         }
 
         return list;
+    }
+
+    private void sortPoints(List<Point> list) {
+        int tempArea = rawArea;
+        for (Point move : list) {
+            doMove(move);
+            int aantal = generatePossibleMoves().size();
+            move.score = aantal;
+            undoLastMove(tempArea);
+        }
+
+        Collections.sort(list, new Comparator<Point>() {
+            @Override
+            public int compare(Point o1, Point o2) {
+                return o2.score - o1.score;
+            }
+        });
     }
 
     private boolean isValidMirroringPoint(Point newPoint) {

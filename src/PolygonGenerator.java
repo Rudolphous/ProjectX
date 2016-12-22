@@ -1,8 +1,10 @@
 import java.util.*;
 
+import static java.lang.Math.abs;
+
 public class PolygonGenerator {
 
-    private static Random RANDOM = new Random(37);
+    private static Random RANDOM = new Random();
 
     private final int numberOfPoints;
     private final int middleOfBoard;
@@ -26,15 +28,6 @@ public class PolygonGenerator {
     }
 
     public void generateAllSolutions() {
-        if (currentSize == 0) {
-            doMoveH(1, 1);
-            doMoveH(2, 2);
-            doMoveH(4, 3);
-            doMoveH(3, 4);
-            doMoveH(6, 5);
-            doMoveH(10, 6);
-        }
-
         if (currentSize == numberOfPoints) {
             numberOfSolutions++;
             rawArea += addDelta(lastPoint(), firstPoint());
@@ -43,9 +36,9 @@ public class PolygonGenerator {
         }
         List<Point> moves = generatePossibleMoves();
 
-        /*if (moves.size() >= 2) {
+        if (currentSize > 0) {
             sortPoints(moves);
-        } */
+        }
 
         int orginalArea = rawArea;
         int error = 0;
@@ -115,12 +108,13 @@ public class PolygonGenerator {
     }
 
     private void sortPoints(List<Point> list) {
-        int tempArea = rawArea;
+        //int halfway = numberOfPoints  / 2;
+        Point lastPoint = lastPoint();
+
         for (Point move : list) {
-            doMove(move);
-            int aantal = generatePossibleMoves().size();
-            move.score = aantal;
-            undoLastMove(tempArea);
+            int x = abs(move.x - lastPoint.x);
+            int y = abs(move.y - lastPoint.y);
+            move.score = -(x * x + y * y);
         }
 
         Collections.sort(list, new Comparator<Point>() {

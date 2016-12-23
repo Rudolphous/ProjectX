@@ -20,7 +20,7 @@ public class PolygonGenerator {
     public PolygonGenerator(int numberOfPoints) {
         this.numberOfPoints = numberOfPoints;
         this.points = new Point[numberOfPoints];
-        this.middleOfBoard = this.numberOfPoints / 3; //if max is 7 then 3 is just valid
+        this.middleOfBoard = this.numberOfPoints / 2; //if max is 7 then 3 is just valid
         this.usedX = new boolean[numberOfPoints];
         this.usedY = new boolean[numberOfPoints];
         this.listOfRCs = new double[numberOfPoints];
@@ -40,16 +40,24 @@ public class PolygonGenerator {
             sortPoints(moves);
         }
 
+        int maxerror = 2;
+        if (currentSize > numberOfPoints * 0.50) maxerror = 3;
+        if (currentSize > numberOfPoints * 0.75) maxerror = 4;
+        if (currentSize > numberOfPoints * 0.80) maxerror = 5;
+        if (currentSize > numberOfPoints * 0.85) maxerror = 6;
+        if (currentSize > numberOfPoints * 0.90) maxerror = 10;
+
+
         int orginalArea = rawArea;
         int error = 0;
         for (Point move :moves) {
             doMove(move);
             generateAllSolutions();
             undoLastMove(orginalArea);
-            error++;
-            if (error == 5) {
+            if (error == maxerror) {
                 break;
             }
+            error++;
         }
     }
 

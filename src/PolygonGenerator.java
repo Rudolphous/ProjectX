@@ -47,7 +47,7 @@ public class PolygonGenerator {
             generateAllSolutions();
             undoLastMove(orginalArea);
             error++;
-            if (error == 2) {
+            if (error == 5) {
                 break;
             }
         }

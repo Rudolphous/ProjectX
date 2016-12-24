@@ -35,6 +35,13 @@ public class PolygonGenerator {
             return currentSize;
         }
 
+        if (currentSize == 0) {
+            doMoveEasy(2, 2);
+            doMoveEasy(numberOfPoints, 1);
+            doMoveEasy(numberOfPoints-1, numberOfPoints);
+            doMoveEasy(1, numberOfPoints-1);
+        }
+
         Queue<Point> moves = generatePossibleMoves();
 
         /*if (currentSize > numberOfPoints * 0.50) maxretries = 3;
@@ -69,6 +76,10 @@ public class PolygonGenerator {
 
     private static int addDelta(Point a, Point b) {
         return (a.x + b.x) * (a.y - b.y);
+    }
+
+    private void doMoveEasy(int x, int y) {
+        doMove(new Point(x-1, y-1));
     }
 
     private void doMove(Point move) {

@@ -13,7 +13,7 @@ public class PolygonGenerator {
 
     private int rawArea;
     private int currentSize;
-    private int maxretries = 2;
+    private int maxretries = 11;
     public long numberOfSolutions = 0;
 
 

@@ -24,7 +24,7 @@ public class Draw extends JFrame{
     }
 
     public void paint(Graphics g){
-        String input = "(2,1), (1,2), (3,4), (5,5), (4,3), (8,6), (6,7), (9,8), (12,10), (11,12), (10,9), (7,13), (13,14), (14,11), (17,15), (15,18), (18,17), (20,20), (19,16), (24,19), (23,23), (26,21), (25,26), (21,25), (16,24), (27,27), (22,28), (29,29), (28,22)";
+        String input = "(5,5), (6,6), (9,8), (7,7), (8,9), (4,4), (1,3), (2,11), (11,10), (10,1), (3,2)";
         Point[] points = convertToPoints(input);
         scaleX = ((maxWidth - 2 * borderx) / points.length);
         scaleY = ((maxHeight - 2 * bordery) / points.length);

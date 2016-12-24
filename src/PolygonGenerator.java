@@ -4,16 +4,12 @@ import static java.lang.Math.abs;
 
 public class PolygonGenerator {
 
-    private static Random RANDOM = new Random();
-
     private final int numberOfPoints;
     private final int middleOfBoard;
     private final Point points[];
     private final boolean usedX[];
     private final boolean usedY[];
     private final double[] listOfRCs;
-    private final Point center;
-    private final int[][][][] killers;
 
     private int rawArea;
     private int currentSize;
@@ -22,13 +18,11 @@ public class PolygonGenerator {
     public PolygonGenerator(int numberOfPoints) {
         this.numberOfPoints = numberOfPoints;
         this.points = new Point[numberOfPoints];
-        this.middleOfBoard = this.numberOfPoints / 2; //if max is 7 then 3 is just valid
-        this.center = new Point(middleOfBoard, middleOfBoard);
+        this.middleOfBoard = this.numberOfPoints / 2;
         this.usedX = new boolean[numberOfPoints];
         this.usedY = new boolean[numberOfPoints];
         this.listOfRCs = new double[numberOfPoints];
         this.rawArea = 0;
-        this.killers = new int[numberOfPoints][numberOfPoints][numberOfPoints][numberOfPoints];
     }
 
     public int generateAllSolutions() {
@@ -44,40 +38,30 @@ public class PolygonGenerator {
             sortPoints(moves);
         }
 
-        int maxerror = 4;
-        /*if (currentSize > numberOfPoints * 0.50) maxerror = 3;
-        if (currentSize > numberOfPoints * 0.75) maxerror = 4;
-        if (currentSize > numberOfPoints * 0.80) maxerror = 5;
-        if (currentSize > numberOfPoints * 0.85) maxerror = 6;
-        if (currentSize > numberOfPoints * 0.90) maxerror = 10;    */
+        int maxretries = 2;
+        /*if (currentSize > numberOfPoints * 0.50) maxretries = 3;
+        if (currentSize > numberOfPoints * 0.75) maxretries = 4;
+        if (currentSize > numberOfPoints * 0.80) maxretries = 5;
+        if (currentSize > numberOfPoints * 0.85) maxretries = 6;
+        if (currentSize > numberOfPoints * 0.90) maxretries = 10;    */
 
 
         int orginalArea = rawArea;
-        int error = 0;
+        int retries = 0;
         int bestScore = 0;
-        Point bestTo = null;
         for (Point move :moves) {
             doMove(move);
             int currentScore = generateAllSolutions();
             undoLastMove(orginalArea);
             if (currentScore > bestScore) {
                 bestScore = currentScore;
-                bestTo = move;
             }
-            if (error == maxerror) {
+            if (retries == maxretries) {
                 break;
             }
-            error++;
+            retries++;
         }
-        if (lastPoint() != null && bestTo != null) {
-            killers[lastPoint().x][lastPoint().y][bestTo.x][bestTo.y]++;
-        }
-
         return bestScore;
-    }
-
-    private void doMoveH(int x, int y) {
-        doMove(new Point(x-1, y-1));
     }
 
     private static int addDelta(Point a, Point b) {
@@ -131,11 +115,10 @@ public class PolygonGenerator {
     }
 
     private void sortPoints(List<Point> list) {
-        //int halfway = numberOfPoints  / 2;
         Point from = lastPoint();
 
         for (Point to : list) {
-            evalKillers(to);
+            evalMinimize(from, to);
         }
 
         Collections.sort(list, new Comparator<Point>() {
@@ -146,13 +129,9 @@ public class PolygonGenerator {
         });
     }
 
-    private void evalMinimize(Point lastPoint, Point move) {
+    private void evalMinimize(Point from, Point move) {
         //we stay as close as possible to the current last point
-        move.score = -calculateDistance(lastPoint, move);
-    }
-
-    private void evalKillers(Point move) {
-        move.score = killers[lastPoint().x][lastPoint().y][move.x][move.y];
+        move.score = -calculateDistance(from, move);
     }
 
     private int calculateDistance(Point from, Point to) {

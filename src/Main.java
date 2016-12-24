@@ -2,7 +2,7 @@ import java.util.Arrays;
 
 public class Main {
 
-    private static PolygonGenerator generator = new PolygonGenerator(23);
+    private static PolygonGenerator generator = new PolygonGenerator(17);
     private static double minArea = Double.MAX_VALUE;
     private static double maxArea = 0.0;
 

@@ -14,15 +14,6 @@ public class Point implements Comparable<Point> {
 
     @Override
     public int compareTo(Point other) {
-        if (other == null) {
-            return 1;
-        }
-        if (y < other.y) {
-            return -1;
-        }
-        if (y > other.y) {
-            return 1;
-        }
-        return x - other.x;
+        return other.score - score;
     }
 }

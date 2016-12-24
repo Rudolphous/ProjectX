@@ -13,7 +13,9 @@ public class PolygonGenerator {
 
     private int rawArea;
     private int currentSize;
+    private int maxretries = 2;
     public long numberOfSolutions = 0;
+
 
     public PolygonGenerator(int numberOfPoints) {
         this.numberOfPoints = numberOfPoints;
@@ -32,13 +34,9 @@ public class PolygonGenerator {
             Main.solution(points);
             return currentSize;
         }
-        List<Point> moves = generatePossibleMoves();
 
-        if (currentSize > 0) {
-            sortPoints(moves);
-        }
+        Queue<Point> moves = generatePossibleMoves();
 
-        int maxretries = 2;
         /*if (currentSize > numberOfPoints * 0.50) maxretries = 3;
         if (currentSize > numberOfPoints * 0.75) maxretries = 4;
         if (currentSize > numberOfPoints * 0.80) maxretries = 5;
@@ -48,8 +46,13 @@ public class PolygonGenerator {
 
         int orginalArea = rawArea;
         int retries = 0;
-        int bestScore = 0;
-        for (Point move :moves) {
+        int bestScore = currentSize;
+        for (;;) {
+            if (moves.isEmpty()) {
+                return bestScore;
+            }
+
+            Point move = moves.poll();
             doMove(move);
             int currentScore = generateAllSolutions();
             undoLastMove(orginalArea);
@@ -88,8 +91,10 @@ public class PolygonGenerator {
         rawArea = orgArea;
     }
 
-    private List<Point> generatePossibleMoves() {
-        List<Point> list = new ArrayList<Point>();
+    private Queue<Point> generatePossibleMoves() {
+        Point lastPoint = (currentSize > 0) ? lastPoint() : null;
+
+        Queue<Point> list = new PriorityQueue<Point>();
         for (int y = 0; y < numberOfPoints; y++) {
             if (usedY[y]) continue;
             for (int x = 0; x < numberOfPoints; x++) {
@@ -107,6 +112,10 @@ public class PolygonGenerator {
                     continue;
                 }
 
+                if (lastPoint != null) {
+                    newPoint.score = evalMinimize(lastPoint, newPoint);
+                }
+
                 list.add(newPoint);
             }
         }
@@ -114,24 +123,9 @@ public class PolygonGenerator {
         return list;
     }
 
-    private void sortPoints(List<Point> list) {
-        Point from = lastPoint();
-
-        for (Point to : list) {
-            evalMinimize(from, to);
-        }
-
-        Collections.sort(list, new Comparator<Point>() {
-            @Override
-            public int compare(Point o1, Point o2) {
-                return o2.score - o1.score;
-            }
-        });
-    }
-
-    private void evalMinimize(Point from, Point move) {
+    private int evalMinimize(Point from, Point move) {
         //we stay as close as possible to the current last point
-        move.score = -calculateDistance(from, move);
+        return -calculateDistance(from, move);
     }
 
     private int calculateDistance(Point from, Point to) {
@@ -155,7 +149,7 @@ public class PolygonGenerator {
     }
 
     private boolean isValidMirroringOtherPoint(Point newPoint) {
-        return firstPoint().compareTo(newPoint) <= 0;
+        return true;
     }
 
     private boolean isValidMirroringFirstPoint(Point newPoint) {

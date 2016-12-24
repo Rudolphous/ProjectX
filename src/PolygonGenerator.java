@@ -13,7 +13,7 @@ public class PolygonGenerator {
 
     private int rawArea;
     private int currentSize;
-    private int maxretries = 1;
+    private int maxretries = 2;
     public long numberOfSolutions = 0;
 
 
@@ -36,10 +36,15 @@ public class PolygonGenerator {
         }
 
         if (currentSize == 0) {
-            doMoveEasy(2, 2);
-            doMoveEasy(numberOfPoints, 1);
+            doMoveEasy(1, numberOfPoints-2);
+            doMoveEasy(2, 1);
+            doMoveEasy(numberOfPoints, 2);
             doMoveEasy(numberOfPoints-1, numberOfPoints);
-            doMoveEasy(1, numberOfPoints-1);
+            doMoveEasy(3, numberOfPoints-1);
+            //(2,1), (11,2), (10,11), (3,10), (5,7), (6,6), (9,4), (7,5), (8,3), (4,8), (1,9)
+
+            //doMoveEasy(numberOfPoints, 2);
+            //doMoveEasy(numberOfPoints-1, numberOfPoints);
         }
 
         Queue<Point> moves = generatePossibleMoves();

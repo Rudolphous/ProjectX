@@ -125,6 +125,8 @@ public class PolygonGenerator {
 
     private int evalMinimize(Point from, Point move) {
         //we stay as close as possible to the current last point
+        //the prioty give the highest value back as earliest
+        //we negate the distance because then we get back the closest as earliest
         return -calculateDistance(from, move);
     }
 

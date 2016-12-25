@@ -25,7 +25,7 @@ public class Main {
 
     public static void main(String args[]) throws Exception {
         long start = System.nanoTime();
-        doMoves("(5,20), (4,25), (1,21), (3,26), (7,23), (11,24), (12,28), (2,27), (14,29), (10,18), (21,13), (16,15), (15,14), (22,5), (17,12), (18,11), (24,9), (19,10), (20,8)");
+        doMoves("(4,25), (7,21), (2,27), (5,20), (1,29), (3,26), (12,24), (14,28), (10,18), (21,12), (16,14), (24,9), (17,13), (19,11), (20,8), (15,15), (18,10), (22,5), (25,4)");
         generator.generateAllSolutions();
         long duration = System.nanoTime() - start;
         System.out.println("duration: " + (double) duration / 1000000);

@@ -231,4 +231,14 @@ public class PolygonGenerator {
     public int getArea() {
         return (rawArea < 0) ? -rawArea : rawArea;
     }
+
+    public void clear() {
+        currentSize = 0;
+        for (int i=0; i<numberOfPoints; i++) {
+           usedX[i] = false;
+           usedY[i] = false;
+        }
+        rawArea = 0;
+        numberOfSolutions = 0;
+    }
 }

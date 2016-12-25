@@ -1,4 +1,5 @@
-import java.util.*;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import static java.lang.Math.abs;
 
@@ -13,7 +14,7 @@ public class PolygonGenerator {
 
     private int rawArea;
     private int currentSize;
-    private int maxretries = 5;
+    private int maxretries = 100000;
     public long numberOfSolutions = 0;
 
 
@@ -27,74 +28,46 @@ public class PolygonGenerator {
         this.rawArea = 0;
     }
 
-    public int generateAllSolutions() {
+    public void generateAllSolutions() {
         if (currentSize == numberOfPoints) {
             numberOfSolutions++;
             rawArea += addDelta(lastPoint(), firstPoint());
             Main.solution(points);
-            return currentSize;
-        }
-
-        if (currentSize == 0)
-        {
-            doMoveEasy(numberOfPoints-4, 4);
-            doMoveEasy(1, numberOfPoints-2);
-            doMoveEasy(2, 1);
-            doMoveEasy(numberOfPoints, 2);
-            doMoveEasy(numberOfPoints-1, numberOfPoints);
-            doMoveEasy(3, numberOfPoints-1);
-            doMoveEasy(4, numberOfPoints-4);
-            doMoveEasy(6, numberOfPoints-3);
-            doMoveEasy(5, numberOfPoints-5);
-
-            //max(23):[(19,4), (1,21), (2,1), (23,2), (22,23), (3,22), (4,19), (6,20), (5,18), (7,17), (8,16), (9,14), (12,13), (11,12), (16,10), (18,15), (17,9), (20,7), (13,11), (15,8), (21,3), (14,5), (10,6)]=411.5
-
-
-            //doMoveEasy(numberOfPoints, 2);
-            //doMoveEasy(numberOfPoints-1, numberOfPoints);
         }
 
         Queue<Point> moves = generatePossibleMoves();
 
-        /*if (currentSize > numberOfPoints * 0.50) maxretries = 3;
-        if (currentSize > numberOfPoints * 0.75) maxretries = 4;
-        if (currentSize > numberOfPoints * 0.80) maxretries = 5;
-        if (currentSize > numberOfPoints * 0.85) maxretries = 6;
-        if (currentSize > numberOfPoints * 0.90) maxretries = 10;    */
+        /*int currentmaxretries = maxretries;
 
+        if (currentSize > numberOfPoints * 0.50) maxretries++;
+        if (currentSize > numberOfPoints * 0.75) maxretries++;
+        if (currentSize > numberOfPoints * 0.80) maxretries++;
+        if (currentSize > numberOfPoints * 0.85) maxretries++;
+        if (currentSize > numberOfPoints * 0.90) maxretries++;*/
 
         int orginalArea = rawArea;
         int retries = 0;
-        int bestScore = currentSize;
         for (;;) {
             if (moves.isEmpty()) {
-                return bestScore;
+                break;
             }
 
             Point move = moves.poll();
             doMove(move);
-            int currentScore = generateAllSolutions();
+            generateAllSolutions();
             undoLastMove(orginalArea);
-            if (currentScore > bestScore) {
-                bestScore = currentScore;
-            }
             if (retries == maxretries) {
                 break;
             }
             retries++;
         }
-        return bestScore;
     }
 
     private static int addDelta(Point a, Point b) {
         return (a.x + b.x) * (a.y - b.y);
     }
 
-    private void doMoveEasy(int x, int y) {
-        doMove(new Point(x-1, y-1));
-    }
-
-    private void doMove(Point move) {
+    public void doMove(Point move) {
         usedX[move.x] = true;
         usedY[move.y] = true;
         points[currentSize] = move;
@@ -136,6 +109,7 @@ public class PolygonGenerator {
                 }
 
                 if (lastPoint != null) {
+                    //if this is not the first point evaluate the move
                     newPoint.score = evalMinimize(lastPoint, newPoint);
                 }
 
@@ -148,7 +122,7 @@ public class PolygonGenerator {
 
     private int evalMinimize(Point from, Point move) {
         //we stay as close as possible to the current last point
-        //the prioty give the highest value back as earliest
+        //the priority give the highest value back as earliest
         //we negate the distance because then we get back the closest as earliest
         return -calculateDistance(from, move);
     }

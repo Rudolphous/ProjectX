@@ -30,7 +30,12 @@ public class Main {
 
     public static void main(String args[]) throws Exception {
         long start = System.nanoTime();
-        improve("(19,4), (1,21), (2,1), (23,2), (22,23), (3,22), (4,19), (6,20), (5,18), (7,17), (8,15), (9,14), (11,16), (10,13), (15,11), (12,12), (17,6), (14,10), (18,7), (21,5), (16,8), (20,3), (13,9)");
+        if (args[1].equals("min")) {
+            higher = false;
+        } else {
+            higher = true;
+        }
+        improve(args[2]);
         long duration = System.nanoTime() - start;
         System.out.println("duration: " + (double) duration / 1000000);
         System.out.println("solutions: " + generator.numberOfSolutions);

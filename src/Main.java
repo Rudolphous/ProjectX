@@ -1,6 +1,6 @@
 import java.util.Arrays;
 
-public class Main implements Printer {
+public class Main implements SolutionPrinter {
 
     private PolygonGenerator generator;
     private double minArea = Double.MAX_VALUE;

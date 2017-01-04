@@ -2,7 +2,6 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 public class PolygonGenerator {
-
     private final int numberOfPoints;
     private final Point points[];
     private final boolean usedX[];
@@ -11,7 +10,6 @@ public class PolygonGenerator {
 
     private int rawArea;
     public int currentSize;
-    //private int maxretries = Integer.MAX_VALUE;
     public long numberOfSolutions = 0;
 
 
@@ -24,7 +22,7 @@ public class PolygonGenerator {
         this.rawArea = 0;
     }
 
-    public void generateAllSolutions(Printer printer) {
+    public void generateAllSolutions(SolutionPrinter printer) {
         if (currentSize == numberOfPoints) {
             numberOfSolutions++;
             rawArea += MyMath.addDelta(lastPoint(), firstPoint());
@@ -36,18 +34,12 @@ public class PolygonGenerator {
         tryAllMoves(printer, moves, orginalArea);
     }
 
-    private void tryAllMoves(Printer printer, Queue<Point> moves, int orginalArea) {
-        //int retries = 0;
-
+    private void tryAllMoves(SolutionPrinter printer, Queue<Point> moves, int orginalArea) {
         while (!moves.isEmpty()) {
             Point move = moves.poll();
             doMove(move);
             generateAllSolutions(printer);
             undoLastMove(orginalArea);
-            /*if (retries == maxretries) {
-                break;
-            }
-            retries++;*/
         }
     }
 
@@ -72,26 +64,16 @@ public class PolygonGenerator {
     }
 
     private Queue<Point> generatePossibleMoves() {
-        //Point lastPoint = (currentSize > 0) ? lastPoint() : null;
-
         Queue<Point> list = new ArrayDeque<>(21);
         for (int y = 0; y < numberOfPoints; y++) {
             if (usedY[y]) continue;
             for (int x = 0; x < numberOfPoints; x++) {
                 if (usedX[x]) continue;
                 Point newPoint = new Point(x, y);
-                /*if (!isValidMirroringPoint(newPoint)) {
-                    continue;
-                }*/
 
                 if (!isValidMove(newPoint)) {
                     continue;
                 }
-
-                /*if (lastPoint != null) {
-                    //if this is not the first point evaluate the move
-                    newPoint.score = evalMinimize2(lastPoint, newPoint);
-                }*/
 
                 list.add(newPoint);
             }
@@ -110,48 +92,6 @@ public class PolygonGenerator {
         }
         return true;
     }
-
-    /*private int evalMinimize(Point from, Point move) {
-        //we stay as close as possible to the current last point
-        //the priority give the highest value back as earliest
-        //we negate the distance because then we get back the closest as earliest
-        return -calculateDistance(from, move);
-    }
-
-    private int evalMinimize2(Point from, Point move) {
-        return -abs(move.x - move.y);
-        //int x = abs(from.x - move.x);
-        //int y = abs(from.y - move.y);
-        //return -abs(x-y);
-    }
-
-    private int calculateDistance(Point from, Point to) {
-        int x = abs(to.x - from.x);
-        int y = abs(to.y - from.y);
-        return x * x + y * y;
-    }
-
-    private boolean isValidMirroringPoint(Point newPoint) {
-        switch (currentSize) {
-            case 0:
-                return isValidMirroringFirstPoint(newPoint);
-            case 1:
-                return isValidMirroringOtherPoint(newPoint);
-            case 2:
-                return true;//isValidMirroringOtherPoint(newPoint) && MyMath.orientation(points[0], points[1], newPoint) >= 0;
-            default:
-                //others
-                return isValidMirroringOtherPoint(newPoint);
-        }
-    }
-
-    private boolean isValidMirroringOtherPoint(Point newPoint) {
-        return true;
-    }
-
-    private boolean isValidMirroringFirstPoint(Point newPoint) {
-        return newPoint.x <= middleOfBoard && newPoint.y <= middleOfBoard;
-    }*/
 
     private boolean doesPointLeadToInvalidIntersections(Point newPoint) {
         if (isAlmostComplete()) {

@@ -1,3 +1,3 @@
-public interface Printer {
+public interface SolutionPrinter {
     void solution(Point[] solution);
 }

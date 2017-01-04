@@ -1,5 +1,6 @@
-public class Math {
+import java.awt.geom.Line2D;
 
+public class Math {
     /**
      * Returns if two lines intersect
      */
@@ -9,7 +10,14 @@ public class Math {
         int o2 = orientation(p1, q1, q2);
         int o3 = orientation(p2, q2, p1);
         int o4 = orientation(p2, q2, q1);
-        return (o1 != o2 && o3 != o4);
+        boolean b1 = o1 != o2 && o3 != o4;
+
+        float x12 = p1.x - p2.x;
+        float x34 = q1.x - q2.x;
+        float y12 = p1.y - q1.y;
+        float y34 = p1.y - q1.y;
+
+        return b1;
     }
 
     /**

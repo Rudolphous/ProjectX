@@ -13,8 +13,8 @@ public class PolygonGenerator {
     private final double[] listOfRCs;
 
     private int rawArea;
-    private int currentSize;
-    private int maxretries = 1;
+    public int currentSize;
+    private int maxretries = Integer.MAX_VALUE;
     public long numberOfSolutions = 0;
 
 
@@ -28,43 +28,31 @@ public class PolygonGenerator {
         this.rawArea = 0;
     }
 
-    public void generateAllSolutions() {
+    public void generateAllSolutions(Printer printer) {
         if (currentSize == numberOfPoints) {
             numberOfSolutions++;
-            rawArea += addDelta(lastPoint(), firstPoint());
-            Main.solution(points);
+            rawArea += Math.addDelta(lastPoint(), firstPoint());
+            printer.solution(points);
         }
 
         Queue<Point> moves = generatePossibleMoves();
-
-        /*int currentmaxretries = maxretries;
-
-        if (currentSize > numberOfPoints * 0.50) maxretries++;
-        if (currentSize > numberOfPoints * 0.75) maxretries++;
-        if (currentSize > numberOfPoints * 0.80) maxretries++;
-        if (currentSize > numberOfPoints * 0.85) maxretries++;
-        if (currentSize > numberOfPoints * 0.90) maxretries++;*/
-
         int orginalArea = rawArea;
-        int retries = 0;
-        for (;;) {
-            if (moves.isEmpty()) {
-                break;
-            }
+        tryAllMoves(printer, moves, orginalArea);
+    }
 
+    private void tryAllMoves(Printer printer, Queue<Point> moves, int orginalArea) {
+        int retries = 0;
+
+        while (!moves.isEmpty()) {
             Point move = moves.poll();
             doMove(move);
-            generateAllSolutions();
+            generateAllSolutions(printer);
             undoLastMove(orginalArea);
             if (retries == maxretries) {
                 break;
             }
             retries++;
         }
-    }
-
-    private static int addDelta(Point a, Point b) {
-        return (a.x + b.x) * (a.y - b.y);
     }
 
     public void doMove(Point move) {
@@ -100,17 +88,13 @@ public class PolygonGenerator {
                     continue;
                 }
 
-                if (isDuplicateRC(newPoint)) {
-                    continue;
-                }
-
-                if (doesPointLeadToInvalidIntersections(newPoint)) {
+                if (!isValidMove(newPoint)) {
                     continue;
                 }
 
                 if (lastPoint != null) {
                     //if this is not the first point evaluate the move
-                    newPoint.score = evalMinimize(lastPoint, newPoint);
+                    newPoint.score = evalMinimize2(lastPoint, newPoint);
                 }
 
                 list.add(newPoint);
@@ -120,11 +104,29 @@ public class PolygonGenerator {
         return list;
     }
 
+    public boolean isValidMove(Point newPoint) {
+        if (isDuplicateRC(newPoint)) {
+            return false;
+        }
+
+        if (doesPointLeadToInvalidIntersections(newPoint)) {
+            return false;
+        }
+        return true;
+    }
+
     private int evalMinimize(Point from, Point move) {
         //we stay as close as possible to the current last point
         //the priority give the highest value back as earliest
         //we negate the distance because then we get back the closest as earliest
         return -calculateDistance(from, move);
+    }
+
+    private int evalMinimize2(Point from, Point move) {
+        return -abs(move.x - move.y);
+        //int x = abs(from.x - move.x);
+        //int y = abs(from.y - move.y);
+        //return -abs(x-y);
     }
 
     private int calculateDistance(Point from, Point to) {
@@ -140,7 +142,7 @@ public class PolygonGenerator {
             case 1:
                 return isValidMirroringOtherPoint(newPoint);
             case 2:
-                return isValidMirroringOtherPoint(newPoint) && Math.orientation(points[0], points[1], newPoint) >= 0;
+                return true;//isValidMirroringOtherPoint(newPoint) && Math.orientation(points[0], points[1], newPoint) >= 0;
             default:
                 //others
                 return isValidMirroringOtherPoint(newPoint);

@@ -46,36 +46,9 @@ public class MyMath {
     }
 
     /**
-     * Calculates the area of a polygon
-     */
-    public static double getArea(Point[] points) {
-        double area = 0.0;
-
-        area += addDelta(points[points.length-1], points[0]);
-        for (int i = 1; i < points.length; i++) {
-            area += addDelta(points[i-1], points[i]);
-        }
-
-        return java.lang.Math.abs(area / 2);
-    }
-
-    /**
      * Adds a delta to calculate the polygone surface
      */
     public static double addDelta(Point a, Point b) {
         return (a.x + b.x) * (a.y - b.y);
-    }
-
-    /**
-     * calculate the RC
-     */
-    public static double calcRC(Point point1, Point point2) {
-        int deltax = point2.x - point1.x;
-        int deltay = point2.y - point1.y;
-        //if (deltay == 0) {
-            //not possible in this program
-            //return Double.MAX_VALUE;
-        //}
-        return (double)deltax / deltay;
     }
 }

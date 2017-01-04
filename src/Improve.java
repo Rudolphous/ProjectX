@@ -43,7 +43,7 @@ public class Improve implements SolutionPrinter {
 
     public void improve(String s) {
         Point points[] = SolutionToPoinsConvertor.convertToPoints(s);
-        generator = new PolygonGenerator(points.length);
+        generator = new PolygonGenerator(points.length, this);
         int len = points.length;
 
         start:
@@ -59,7 +59,7 @@ public class Improve implements SolutionPrinter {
                 for (int index=start; index<start + len - maxaantal; index++) {
                     generator.doMove(points[index % len]);
                 }
-                generator.generateAllSolutions(this);
+                generator.generateAllSolutions();
                 if (higher && maxPoints != null) {
                     points = maxPoints.clone();
                     maxaantal = 0;
@@ -75,13 +75,6 @@ public class Improve implements SolutionPrinter {
                 }
             }
             System.out.println();
-        }
-    }
-
-    public void doMoves(String s) {
-        Point points[] = SolutionToPoinsConvertor.convertToPoints(s);
-        for (Point point : points) {
-            generator.doMove(point);
         }
     }
 }

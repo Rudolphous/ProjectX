@@ -1,66 +1,76 @@
 import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 
 public class PolygonGenerator {
     private final int numberOfPoints;
     private final Point points[];
     private final boolean usedX[];
     private final boolean usedY[];
-    private final double[] listOfRCs;
+    private final SolutionPrinter solutionPrinter;
+    private final RCChecker rcChecker;
 
     private int rawArea;
     public int currentSize;
     public long numberOfSolutions = 0;
 
 
-    public PolygonGenerator(int numberOfPoints) {
+    public PolygonGenerator(int numberOfPoints, SolutionPrinter solutionPrinter) {
         this.numberOfPoints = numberOfPoints;
         this.points = new Point[numberOfPoints];
         this.usedX = new boolean[numberOfPoints];
         this.usedY = new boolean[numberOfPoints];
-        this.listOfRCs = new double[numberOfPoints];
         this.rawArea = 0;
+        this.solutionPrinter = solutionPrinter;
+        this.rcChecker = new RCChecker(numberOfPoints);
     }
 
-    public void generateAllSolutions(SolutionPrinter printer) {
+    public void generateAllSolutions() {
         if (currentSize == numberOfPoints) {
             numberOfSolutions++;
             rawArea += MyMath.addDelta(lastPoint(), firstPoint());
-            printer.solution(points);
+            solutionPrinter.solution(points);
         }
 
         Queue<Point> moves = generatePossibleMoves();
-        int orginalArea = rawArea;
-        tryAllMoves(printer, moves, orginalArea);
+        tryAllMoves(moves);
     }
 
-    private void tryAllMoves(SolutionPrinter printer, Queue<Point> moves, int orginalArea) {
+    private void tryAllMoves(Queue<Point> moves) {
+        int orginalArea = rawArea;
         while (!moves.isEmpty()) {
             Point move = moves.poll();
-            doMove(move);
-            generateAllSolutions(printer);
-            undoLastMove(orginalArea);
+            Integer rc = doMove(move);
+            generateAllSolutions();
+            undoLastMove(orginalArea, rc);
         }
     }
 
-    public void doMove(Point move) {
+    public Integer doMove(Point move) {
         usedX[move.x] = true;
         usedY[move.y] = true;
         points[currentSize] = move;
+        Integer rc = null;
         if (currentSize >= 1) {
             //rc is only possible with two points, so we two points we have one rc
-            listOfRCs[currentSize - 1] = MyMath.calcRC(lastPoint(), move);
+            rc = calcRC(lastPoint(), move);
+            rcChecker.useRC(rc);
             rawArea += MyMath.addDelta(lastPoint(), move);
         }
         currentSize++;
+        return rc;
     }
 
-    private void undoLastMove(int orgArea) {
+    private void undoLastMove(int orgArea, Integer rc) {
         Point lastPoint = lastPoint();
         usedX[lastPoint.x] = false;
         usedY[lastPoint.y] = false;
         currentSize--;
         rawArea = orgArea;
+        if (rc != null) {
+            rcChecker.unUseRC(rc);
+        }
     }
 
     private Queue<Point> generatePossibleMoves() {
@@ -83,7 +93,7 @@ public class PolygonGenerator {
     }
 
     public boolean isValidMove(Point newPoint) {
-        if (isDuplicateRC(newPoint)) {
+        if (isDuplicateRC2(newPoint)) {
             return false;
         }
 
@@ -132,38 +142,23 @@ public class PolygonGenerator {
         return points[currentSize - 1];
     }
 
-    private boolean isDuplicateRC(Point newPoint) {
+    private boolean isDuplicateRC2(Point newPoint) {
         if (currentSize == 0) {
             return false;
         }
 
         if (isAlmostComplete()) {
-            Double rc1 = MyMath.calcRC(newPoint, firstPoint());
-            Double rc2 = MyMath.calcRC(lastPoint(), newPoint);
-            return rc1.equals(rc2) || containsRC(rc1, rc2);
+            int rc1 = calcRC(newPoint, firstPoint());
+            int rc2 = calcRC(lastPoint(), newPoint);
+            return rc1 == rc2 || rcChecker.isUsed(rc1) || rcChecker.isUsed(rc2);
         }
 
-        Double rc = MyMath.calcRC(lastPoint(), newPoint);
-        return containsRC(rc);
+        int rc = calcRC(lastPoint(), newPoint);
+        return rcChecker.isUsed(rc);
     }
 
-    private boolean containsRC(Double rc) {
-        for (int i=0; i<currentSize-1; i++) {
-            if (listOfRCs[i] == rc) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean containsRC(Double rc1, Double rc2) {
-        for (int i=0; i<currentSize-1; i++) {
-            if (listOfRCs[i] == rc1 || listOfRCs[i] == rc2) {
-                return true;
-            }
-        }
-
-        return false;
+    private int calcRC(Point p1, Point p2) {
+        return rcChecker.lookupRC(p1.x, p1.y, p2.x, p2.y);
     }
 
     public int getArea() {
@@ -178,5 +173,6 @@ public class PolygonGenerator {
         }
         rawArea = 0;
         numberOfSolutions = 0;
+        rcChecker.clear();
     }
 }

@@ -1,12 +1,9 @@
-import java.util.PriorityQueue;
+import java.util.ArrayDeque;
 import java.util.Queue;
-
-import static java.lang.Math.abs;
 
 public class PolygonGenerator {
 
     private final int numberOfPoints;
-    private final int middleOfBoard;
     private final Point points[];
     private final boolean usedX[];
     private final boolean usedY[];
@@ -14,14 +11,13 @@ public class PolygonGenerator {
 
     private int rawArea;
     public int currentSize;
-    private int maxretries = Integer.MAX_VALUE;
+    //private int maxretries = Integer.MAX_VALUE;
     public long numberOfSolutions = 0;
 
 
     public PolygonGenerator(int numberOfPoints) {
         this.numberOfPoints = numberOfPoints;
         this.points = new Point[numberOfPoints];
-        this.middleOfBoard = this.numberOfPoints / 2;
         this.usedX = new boolean[numberOfPoints];
         this.usedY = new boolean[numberOfPoints];
         this.listOfRCs = new double[numberOfPoints];
@@ -31,7 +27,7 @@ public class PolygonGenerator {
     public void generateAllSolutions(Printer printer) {
         if (currentSize == numberOfPoints) {
             numberOfSolutions++;
-            rawArea += Math.addDelta(lastPoint(), firstPoint());
+            rawArea += MyMath.addDelta(lastPoint(), firstPoint());
             printer.solution(points);
         }
 
@@ -41,17 +37,17 @@ public class PolygonGenerator {
     }
 
     private void tryAllMoves(Printer printer, Queue<Point> moves, int orginalArea) {
-        int retries = 0;
+        //int retries = 0;
 
         while (!moves.isEmpty()) {
             Point move = moves.poll();
             doMove(move);
             generateAllSolutions(printer);
             undoLastMove(orginalArea);
-            if (retries == maxretries) {
+            /*if (retries == maxretries) {
                 break;
             }
-            retries++;
+            retries++;*/
         }
     }
 
@@ -61,8 +57,8 @@ public class PolygonGenerator {
         points[currentSize] = move;
         if (currentSize >= 1) {
             //rc is only possible with two points, so we two points we have one rc
-            listOfRCs[currentSize - 1] = Math.calcRC(lastPoint(), move);
-            rawArea += Math.addDelta(lastPoint(), move);
+            listOfRCs[currentSize - 1] = MyMath.calcRC(lastPoint(), move);
+            rawArea += MyMath.addDelta(lastPoint(), move);
         }
         currentSize++;
     }
@@ -76,26 +72,26 @@ public class PolygonGenerator {
     }
 
     private Queue<Point> generatePossibleMoves() {
-        Point lastPoint = (currentSize > 0) ? lastPoint() : null;
+        //Point lastPoint = (currentSize > 0) ? lastPoint() : null;
 
-        Queue<Point> list = new PriorityQueue<Point>();
+        Queue<Point> list = new ArrayDeque<>(21);
         for (int y = 0; y < numberOfPoints; y++) {
             if (usedY[y]) continue;
             for (int x = 0; x < numberOfPoints; x++) {
                 if (usedX[x]) continue;
                 Point newPoint = new Point(x, y);
-                if (!isValidMirroringPoint(newPoint)) {
+                /*if (!isValidMirroringPoint(newPoint)) {
                     continue;
-                }
+                }*/
 
                 if (!isValidMove(newPoint)) {
                     continue;
                 }
 
-                if (lastPoint != null) {
+                /*if (lastPoint != null) {
                     //if this is not the first point evaluate the move
                     newPoint.score = evalMinimize2(lastPoint, newPoint);
-                }
+                }*/
 
                 list.add(newPoint);
             }
@@ -115,7 +111,7 @@ public class PolygonGenerator {
         return true;
     }
 
-    private int evalMinimize(Point from, Point move) {
+    /*private int evalMinimize(Point from, Point move) {
         //we stay as close as possible to the current last point
         //the priority give the highest value back as earliest
         //we negate the distance because then we get back the closest as earliest
@@ -142,7 +138,7 @@ public class PolygonGenerator {
             case 1:
                 return isValidMirroringOtherPoint(newPoint);
             case 2:
-                return true;//isValidMirroringOtherPoint(newPoint) && Math.orientation(points[0], points[1], newPoint) >= 0;
+                return true;//isValidMirroringOtherPoint(newPoint) && MyMath.orientation(points[0], points[1], newPoint) >= 0;
             default:
                 //others
                 return isValidMirroringOtherPoint(newPoint);
@@ -155,27 +151,27 @@ public class PolygonGenerator {
 
     private boolean isValidMirroringFirstPoint(Point newPoint) {
         return newPoint.x <= middleOfBoard && newPoint.y <= middleOfBoard;
-    }
+    }*/
 
     private boolean doesPointLeadToInvalidIntersections(Point newPoint) {
         if (isAlmostComplete()) {
             //now we do more checks since this is the last point and we close the loop (two lines are added instead of one)
             for (int i = 1; i < currentSize - 1; i++) {
                 //newpoint to first point
-                if (Math.isLinesIntersect(points[i], points[i + 1], newPoint, firstPoint())) {
+                if (MyMath.isLinesIntersect(points[i], points[i + 1], newPoint, firstPoint())) {
                     return true;
                 }
             }
 
             for (int i = 0; i < currentSize - 2; i++) {
                 //lastpoint to new point
-                if (Math.isLinesIntersect(points[i], points[i + 1], lastPoint(), newPoint)) {
+                if (MyMath.isLinesIntersect(points[i], points[i + 1], lastPoint(), newPoint)) {
                     return true;
                 }
             }
         } else {
             for (int i = 0; i < currentSize - 2; i++) {
-                if (Math.isLinesIntersect(points[i], points[i + 1], lastPoint(), newPoint)) {
+                if (MyMath.isLinesIntersect(points[i], points[i + 1], lastPoint(), newPoint)) {
                     return true;
                 }
             }
@@ -202,12 +198,12 @@ public class PolygonGenerator {
         }
 
         if (isAlmostComplete()) {
-            Double rc1 = Math.calcRC(newPoint, firstPoint());
-            Double rc2 = Math.calcRC(lastPoint(), newPoint);
+            Double rc1 = MyMath.calcRC(newPoint, firstPoint());
+            Double rc2 = MyMath.calcRC(lastPoint(), newPoint);
             return rc1.equals(rc2) || containsRC(rc1, rc2);
         }
 
-        Double rc = Math.calcRC(lastPoint(), newPoint);
+        Double rc = MyMath.calcRC(lastPoint(), newPoint);
         return containsRC(rc);
     }
 

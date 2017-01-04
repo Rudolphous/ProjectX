@@ -48,7 +48,7 @@ public class Improve implements Printer {
 
         start:
 
-        for (int maxaantal=0; maxaantal< len; maxaantal++) {
+        for (int maxaantal=0; maxaantal< 9; maxaantal++) {
 
             System.out.println("maxaantal: " + maxaantal);
 

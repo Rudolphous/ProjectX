@@ -1,7 +1,5 @@
 import java.util.ArrayDeque;
-import java.util.HashSet;
 import java.util.Queue;
-import java.util.Set;
 
 public class PolygonGenerator {
     private final int numberOfPoints;
@@ -9,7 +7,7 @@ public class PolygonGenerator {
     private final boolean usedX[];
     private final boolean usedY[];
     private final SolutionPrinter solutionPrinter;
-    private final RCChecker rcChecker;
+    private final SlopeUniqChecker slopeUniqChecker;
 
     private int rawArea;
     public int currentSize;
@@ -23,7 +21,7 @@ public class PolygonGenerator {
         this.usedY = new boolean[numberOfPoints];
         this.rawArea = 0;
         this.solutionPrinter = solutionPrinter;
-        this.rcChecker = new RCChecker(numberOfPoints);
+        this.slopeUniqChecker = new SlopeUniqChecker(numberOfPoints);
     }
 
     public void generateAllSolutions() {
@@ -41,9 +39,9 @@ public class PolygonGenerator {
         int orginalArea = rawArea;
         while (!moves.isEmpty()) {
             Point move = moves.poll();
-            Integer rc = doMove(move);
+            Integer slope = doMove(move);
             generateAllSolutions();
-            undoLastMove(orginalArea, rc);
+            undoLastMove(orginalArea, slope);
         }
     }
 
@@ -51,25 +49,25 @@ public class PolygonGenerator {
         usedX[move.x] = true;
         usedY[move.y] = true;
         points[currentSize] = move;
-        Integer rc = null;
+        Integer slope = null;
         if (currentSize >= 1) {
-            //rc is only possible with two points, so we two points we have one rc
-            rc = calcRC(lastPoint(), move);
-            rcChecker.useRC(rc);
+            //slope is only possible with two points
+            slope = getSlope(lastPoint(), move);
+            slopeUniqChecker.useSlope(slope);
             rawArea += MyMath.addDelta(lastPoint(), move);
         }
         currentSize++;
-        return rc;
+        return slope;
     }
 
-    private void undoLastMove(int orgArea, Integer rc) {
+    private void undoLastMove(int orgArea, Integer slope) {
         Point lastPoint = lastPoint();
         usedX[lastPoint.x] = false;
         usedY[lastPoint.y] = false;
         currentSize--;
         rawArea = orgArea;
-        if (rc != null) {
-            rcChecker.unUseRC(rc);
+        if (slope != null) {
+            slopeUniqChecker.unuseSlope(slope);
         }
     }
 
@@ -93,7 +91,7 @@ public class PolygonGenerator {
     }
 
     public boolean isValidMove(Point newPoint) {
-        if (isDuplicateRC2(newPoint)) {
+        if (isDuplicateSlope(newPoint)) {
             return false;
         }
 
@@ -142,23 +140,23 @@ public class PolygonGenerator {
         return points[currentSize - 1];
     }
 
-    private boolean isDuplicateRC2(Point newPoint) {
+    private boolean isDuplicateSlope(Point newPoint) {
         if (currentSize == 0) {
             return false;
         }
 
         if (isAlmostComplete()) {
-            int rc1 = calcRC(newPoint, firstPoint());
-            int rc2 = calcRC(lastPoint(), newPoint);
-            return rc1 == rc2 || rcChecker.isUsed(rc1) || rcChecker.isUsed(rc2);
+            int slope1 = getSlope(newPoint, firstPoint());
+            int slope2 = getSlope(lastPoint(), newPoint);
+            return slope1 == slope2 || slopeUniqChecker.isSlopeUsed(slope1) || slopeUniqChecker.isSlopeUsed(slope2);
         }
 
-        int rc = calcRC(lastPoint(), newPoint);
-        return rcChecker.isUsed(rc);
+        int slope = getSlope(lastPoint(), newPoint);
+        return slopeUniqChecker.isSlopeUsed(slope);
     }
 
-    private int calcRC(Point p1, Point p2) {
-        return rcChecker.lookupRC(p1.x, p1.y, p2.x, p2.y);
+    private int getSlope(Point p1, Point p2) {
+        return slopeUniqChecker.lookupSlope(p1.x, p1.y, p2.x, p2.y);
     }
 
     public int getArea() {
@@ -173,6 +171,6 @@ public class PolygonGenerator {
         }
         rawArea = 0;
         numberOfSolutions = 0;
-        rcChecker.clear();
+        slopeUniqChecker.clear();
     }
 }
